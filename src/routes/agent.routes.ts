@@ -12,6 +12,8 @@ router.get('/get_all_drivers',agentController.getAvailableDrivers);
 router.get('/get_booking_by_status',agentController.getBookingsByStatus);
 router.patch('/change_driver',agentController.changeDriver);
 router.patch('/change_taxi',agentController.changeTaxi);
+router.get('/get_review_by_id',agentController.getReviewById);
+router.get('/get_booking_review',agentController.getBookingsReview);
 
 
 export default router;

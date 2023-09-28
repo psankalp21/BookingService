@@ -13,12 +13,8 @@ export default class BaseEntity {
         return await this.modelName.findById(condition)
     }
 
-    async find(condition?:any) {
-        if (condition)
-            return await this.modelName.find(condition)
-        else
-            return await this.modelName.find()
-
+    async find(condition = {}) {
+        return await this.modelName.find(condition)
     }
 
     async create(payload) {
@@ -27,11 +23,11 @@ export default class BaseEntity {
     async deleteOne(condition) {
         return await this.modelName.deleteOne(condition);
     }
-    async findByIdAndUpdate(id,payload)
-    {
-        return await this.modelName.findByIdAndUpdate({_id:id},{$set: payload},{new: true})
+    async updateOne(condition, payload) {
+        
+        return await this.modelName.updateOne(condition, { $set: payload });
     }
-    async updateOne(id, payload) {
-        return await this.modelName.updateOne({ _id: id }, { $set: payload });
+    async findByIdAndUpdate(id, payload) {
+        return await this.modelName.findByIdAndUpdate(id, { $set: payload });
     }
 }

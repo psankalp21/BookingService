@@ -24,7 +24,6 @@ class BookingEntity extends BaseEntity {
             return await this.find(condition)
         else
             return await this.find()
-
     }
 
     async cancelBooking(id) {
@@ -34,25 +33,12 @@ class BookingEntity extends BaseEntity {
         return await this.findByIdAndUpdate(id, update)
     }
 
-    // async acceptBooking(payload) {
-    //     const update = {
-    //         driver_id: payload.driver_id,
-    //         booking_status: 'accepted'
-    //     };
-    //     return await this.findByIdAndUpdate(payload.booking_id, update);
-    // }
 
-    async acceptBooking(payload) {
-        const update = {
-            driver_id: payload.driver_id,
-            booking_status: 'accepted'
-        };
-
-        await this.updateOne(payload.booking_id, update)
-
+    async completeBookingDetails(booking_id)
+    {
         const booking = await BookingCollection.aggregate([
             {
-              $match: { _id: new mongoose.Types.ObjectId(payload.booking_id) },
+              $match: { _id: new mongoose.Types.ObjectId(booking_id) },
             },
             {
               $lookup: {
@@ -76,9 +62,28 @@ class BookingEntity extends BaseEntity {
             {
               $unwind: '$driver_collection',
             },
+            {
+                $lookup: {
+                  from: 'agent_collections',
+                  localField: 'agent_id',
+                  foreignField: '_id',
+                  as: 'agent_collection',
+                },
+              },
+              {
+                $unwind: '$agent_collection',
+              },
           ]);
 
-        return booking[0]
+          return booking[0]
+    }
+
+    async acceptBooking(payload) {
+        const update = {
+            driver_id: payload.driver_id,
+            booking_status: 'accepted'
+        };
+        await this.updateOne(payload.booking_id, update)
     }
 
     async changeDriver(booking_id, driver_id) {
@@ -93,7 +98,6 @@ class BookingEntity extends BaseEntity {
         const update = {
             taxi_id: taxi_id,
         };
-
         return await this.findByIdAndUpdate(booking_id, update);
     }
 

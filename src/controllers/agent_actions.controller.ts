@@ -1,7 +1,9 @@
 import { Request, Response } from 'express';
-import { agentBookingServices } from '../services/agentBooking.services';
+import { agentBookingServices } from '../services/agentServices';
+import { review_services } from '../services/review.services';
 
 const agentServices = new agentBookingServices()
+const reviewServices = new review_services()
 
 export class agent_booking_controller {
     async getBookings(req: Request, res: Response) {
@@ -24,7 +26,7 @@ export class agent_booking_controller {
             console.log(e);
             res.send({ "Error: ": e.message });
         }
-    }s
+    }
     async acceptBooking(req: Request, res: Response) {
         try {
             const payload = req.body
@@ -37,7 +39,6 @@ export class agent_booking_controller {
             res.send({ "Error: ": e.message });
         }
     }
-
     async rejectBooking(req: Request, res: Response) {
         try {
             const booking_id = req.query.booking_id
@@ -49,7 +50,6 @@ export class agent_booking_controller {
             res.send({ "Error: ": e.message });
         }
     }
-
     async changeDriver(req: Request, res: Response) {
         try {
             const payload = req.body
@@ -87,6 +87,28 @@ export class agent_booking_controller {
         }
     }
 
+    async getReviewById(req: Request, res: Response) {
+        try {
+            const review_id = req.query.review_id
+            const review = await reviewServices.getReviewById(review_id)
+            res.send({ "review": review })
+        }
+        catch (e) {
+            console.log(e);
+            res.send({ "Error: ": e.message });
+        }
+    }
 
+    async getBookingsReview(req: Request, res: Response) {
+        try {
+            const booking_id = req.query.booking_id
+            const review = await reviewServices.getReviews({booking_id:booking_id})
+            res.send({ "reviews": review })
+        }
+        catch (e) {
+            console.log(e);
+            res.send({ "Error: ": e.message });
+        }
+    }
 
 }

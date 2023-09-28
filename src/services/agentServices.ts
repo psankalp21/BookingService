@@ -2,6 +2,7 @@ import BookingCollection from "../database/models/booking.model";
 import { BookingE } from "../entities/booking.entity";
 import axios from "axios";
 import { sendEmail } from "../utils/nodemailer";
+import { redis } from "../database/redis";
 
 export class agentBookingServices {
     async getBookings() {
@@ -16,7 +17,8 @@ export class agentBookingServices {
 
     async acceptBooking(payload) {
         if (await this.checkDriverAvailability(payload.booking_id, payload.driver_id)) {
-            const booking = await BookingE.acceptBooking(payload);
+            await BookingE.acceptBooking(payload)
+            const booking = await BookingE.completeBookingDetails(payload.booking_id);
             await sendEmail(booking.user_collection.email, "Your Booking has been accepted", `
             Dear ${booking.user_collection.first_name},
             Your booking for ${booking.source} to ${booking.destination} for ${booking.journey_date} has been accepted.
@@ -75,6 +77,7 @@ export class agentBookingServices {
     }
 
     async getAvailableDrivers(booking_id) {
+
         const apiUrl = 'http://localhost:3001/user/get_all_drivers';
         const response = await axios.post(apiUrl);
         const new_drivers = response.data.Drivers
@@ -95,4 +98,6 @@ export class agentBookingServices {
         }
         return availableDriver;
     }
+
+
 }
