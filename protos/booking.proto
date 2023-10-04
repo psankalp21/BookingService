@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package booking;
+
+import "google/protobuf/timestamp.proto"; // Import Timestamp from Google Protobuf
+
+service BookingService {
+  rpc GetAvailableDrivers (DriverRequest) returns (DriverResponse);
+}
+
+message DriverRequest {
+  string booking_id = 1;
+}
+
+message DriverResponse {
+  repeated Driver drivers = 1;
+}
+
+message Driver {
+  string _id = 1;
+  string name = 2;
+  string email = 3;
+  string password = 4;
+  google.protobuf.Timestamp dob = 5; 
+  string phone = 6;
+  bool available = 7;
+  int32 __v = 8;
+}

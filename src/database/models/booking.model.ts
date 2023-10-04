@@ -7,7 +7,7 @@ enum BookingStatus {
   Canceled = "canceled",
 }
 
-interface Booking extends Document {
+export interface Booking extends Document {
   user_id: Types.ObjectId;
   taxi_id?: object;
   driver_id?: Types.ObjectId; // Ensure consistent type definition

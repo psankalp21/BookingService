@@ -18,29 +18,29 @@ export class user_booking_controller {
         }
     }
 
-    async cancelBooking(req: Request, res: Response) {
-        const id: object = req.query.id;
-        try {
-            await userServices.cancelBooking(id);
-            res.send("Booking canceled")
-        }
-        catch (e) {
-            console.log(e);
-            res.send({ "Error: ": e.message });
-        }
-    }
+    // async cancelBooking(req: Request, res: Response) {
+    //     const id: object = req.query.id;
+    //     try {
+    //         await userServices.cancelBooking(id);
+    //         res.send("Booking canceled")
+    //     }
+    //     catch (e) {
+    //         console.log(e);
+    //         res.send({ "Error: ": e.message });
+    //     }
+    // }
 
-    async getBookingById(req: Request, res: Response) {
-        const booking_id: object = req.query.booking_id;
-        try {
-            const booking = await userServices.getBooking(booking_id);
-            res.send({ "Message": booking })
-        }
-        catch (e) {
-            console.log(e);
-            res.send({ "Error: ": e.message });
-        }
-    }
+    // async getBookingById(req: Request, res: Response) {
+    //     const booking_id: object = req.query.booking_id;
+    //     try {
+    //         const booking = await userServices.getBooking(booking_id);
+    //         res.send({ "Message": booking })
+    //     }
+    //     catch (e) {
+    //         console.log(e);
+    //         res.send({ "Error: ": e.message });
+    //     }
+    // }
 
     async vieMyBookings(req: Request, res: Response) {
         try {

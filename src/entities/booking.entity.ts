@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import BookingCollection from "../database/models/booking.model";
+import BookingCollection, { Booking } from "../database/models/booking.model";
 import BaseEntity from "./base.entity";
 
 class BookingEntity extends BaseEntity {
@@ -15,7 +15,7 @@ class BookingEntity extends BaseEntity {
         return await this.findOne(condition)
     }
 
-    async addBooking(payload) {
+    async addBooking(payload:Booking) {
         return await this.create(payload)
     }
 

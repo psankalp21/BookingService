@@ -1,18 +1,68 @@
-import BookingCollection from "../database/models/booking.model";
 import { BookingE } from "../entities/booking.entity";
-import axios from "axios";
 import { sendEmail } from "../utils/nodemailer";
-import { redis } from "../database/redis";
+import * as grpc from '@grpc/grpc-js';
+import { GrpcClass } from "../utils/grpc";
 
-export class agentBookingServices {
+const server = new grpc.Server();
+
+export class agentBookingServices extends GrpcClass {
+
+    private service!: any;
+
+    constructor() {
+        super('booking.proto', 'booking')
+        this.loadService()
+    }
+
+    loadService() {
+        this.service = new this.package.BookingService("0.0.0.0:7000", grpc.credentials.createInsecure())
+    }
+
+
+    async getAvailableDrivers(booking_id) {
+        try {
+
+            const booking = { booking_id: booking_id };
+
+            const data = await new Promise((resolve, reject) => {
+                this.service.GetAvailableDrivers(booking, (err, response) => {
+                    if (err) {
+                        console.log("errorrrr")
+                        reject(err);
+                    } else {
+                        console.log("resolveee")
+                        resolve(response);
+                    }
+                });
+            });
+            console.log("dataaa",data)
+
+            return data;
+        } catch (err) {
+            return err;
+        }
+    }
+
+
     async getBookings() {
         const booking = await BookingE.getAllBookings();
         return booking
     }
 
     async getBookingsByStatus(status) {
-        const booking = await BookingE.getBookingsWithStatus(status);
+
+        const booking = await BookingE.getBooking({ journey_status: status.journey_status });
         return booking
+    }
+
+    async checkDriverAvailability(booking_id, driver_id) {
+        const booking = await BookingE.getBookingById(booking_id)
+        const journey_date = booking.journey_date
+        const existing_booking = await BookingE.getBooking({ driver_id: driver_id, journey_date: journey_date })
+        if (existing_booking)
+            return false
+        else
+            return true
     }
 
     async acceptBooking(payload) {
@@ -49,21 +99,10 @@ export class agentBookingServices {
         const booking_id = payload.booking_id;
         const taxi_id = payload.taxi_id;
 
-        if (await this.checkTaxiAvailability(booking_id, taxi_id)) {
+        if (await this.checkTaxiAvailability(booking_id, taxi_id))
             await BookingE.changeTaxi(booking_id, taxi_id)
-        }
         else
             throw new Error("Taxi not available for selected slot")
-    }
-
-    async checkDriverAvailability(booking_id, driver_id) {
-        const booking = await BookingE.getBookingById(booking_id)
-        const journey_date = booking.journey_date
-        const existing_booking = await BookingE.getBooking({ driver_id: driver_id, journey_date: journey_date })
-        if (existing_booking)
-            return false
-        else
-            return true
     }
 
     async checkTaxiAvailability(booking_id, taxi_id) {
@@ -76,28 +115,45 @@ export class agentBookingServices {
             return true
     }
 
-    async getAvailableDrivers(booking_id) {
+    // async getAvailableDrivers(booking_id) {
+    //     // Make a gRPC call to fetch available drivers
+    //     const request = new GetAvailableDriversRequest();
+    //     request.setBookingId(booking_id);
 
-        const apiUrl = 'http://localhost:3001/user/get_all_drivers';
-        const response = await axios.post(apiUrl);
-        const new_drivers = response.data.Drivers
+    //     return new Promise((resolve, reject) => {
+    //         this.bookingClient.getAvailableDrivers(request, (error, response: GetAvailableDriversResponse) => {
+    //             if (error) {
+    //                 reject(error);
+    //             } else {
+    //                 const newDrivers = response.getDriversList();
+    //                 resolve(newDrivers);
+    //             }
+    //         });
+    //     });
+    // }
 
-        const booking = await BookingCollection.findById(booking_id);
-        let availableDriver = [];
+    // async getAvailableDrivers(booking_id) {
 
-        for (const driver of new_drivers) {
-            const existing_driver = await BookingCollection.findOne({
-                driver_id: driver._id,
-                journey_date: {
-                    $gte: new Date(booking.journey_date),
-                    $lte: new Date(booking.journey_date)
-                },
-            });
-            if (!existing_driver)
-                availableDriver.push({ "id": driver._id, "Name": driver.name, "email": driver.email });
-        }
-        return availableDriver;
-    }
+    //     const apiUrl = 'http://localhost:3001/user/get_all_drivers';
+    //     const response = await axios.post(apiUrl);
+    //     const new_drivers = response.data.Drivers
+    //     return new_drivers
+    //     // // const booking = await BookingCollection.findById(booking_id);
+    //     // // let availableDriver = [];
+
+    //     // // for (const driver of new_drivers) {
+    //     // //     const existing_driver = await BookingCollection.findOne({
+    //     // //         driver_id: driver._id,
+    //     // //         journey_date: {
+    //     // //             $gte: new Date(booking.journey_date),
+    //     // //             $lte: new Date(booking.journey_date)
+    //     // //         },
+    //     // //     });
+    //     // //     if (!existing_driver)
+    //     // //         availableDriver.push({ "id": driver._id, "Name": driver.name, "email": driver.email });
+    //     // // }
+    //     // // return availableDriver;
+    // }
 
 
 }
